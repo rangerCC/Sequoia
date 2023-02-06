@@ -27,19 +27,16 @@ def prepare():
     statistics(all_data, stocks)
 
     strategies = {
+        '停机坪': parking_apron.check,
+        '涨停大海龟': turtle_trade_limitup.check_enter,
+        '高而窄的旗形': high_tight_flag.check,
+        '均线多头': keep_increasing.check,
         # '放量上涨': enter.check_volume,
-        # '均线多头': keep_increasing.check,
-        '缩量停机坪': parking_apron.check,
         # '回踩年线': backtrace_ma250.check,
         # '突破平台': breakthrough_platform.check,
         # '无大幅回撤': low_backtrace_increase.check,
-        '涨停大海龟': turtle_trade_limitup.check_enter,
-        # '高而窄的旗形': high_tight_flag.check,
         # '放量跌停': climax_limitdown.check,
     }
-
-    if datetime.datetime.now().weekday() == 0:
-        strategies['均线多头'] = keep_increasing.check
 
     # 过滤科创，300，ST
     stocks = filter_stocks(stocks)
@@ -60,7 +57,7 @@ def check(stocks_data, strategy, strategy_func):
     m_filter = check_enter(end_date=end, strategy_fun=strategy_func)
     results = dict(filter(m_filter, stocks_data.items()))
     if len(results) > 0:
-        push.strategy('\n**************"{0}"**************\n{1}\n**************"{0}"**************\n\n'.format(strategy, list(results.keys())))
+        push.strategy('\n**************"{0}"**************\n{1}\n**************"{0}"**************\n'.format(strategy, list(results.keys())))
 
 
 def check_enter(end_date=None, strategy_fun=enter.check_volume):

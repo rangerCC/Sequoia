@@ -40,23 +40,12 @@ def check_internal(code_name, data, limitup_row):
     if len(limitup_end.index) < 3:
         return False
 
-    # 2倍缩量
-    highest_col = limitup_end.iloc[-1] # 区间最高点
-    for index, row in limitup_end.iterrows():
-        if row['收盘'] > highest_col['成交量']:
-            highest_col = row
-    last_col = limitup_end.iloc[-1]['成交量']
-    if last_col >= (highest_col['成交量'] / 2) :
-        return False
-    
     consolidation_day1 = limitup_end.iloc[0]
     consolidation_day23 = limitup_end = limitup_end.tail(n=2)
 
     if not(consolidation_day1['收盘'] > limitup_price and consolidation_day1['开盘'] > limitup_price and
         0.97 < consolidation_day1['收盘'] / consolidation_day1['开盘'] < 1.03):
         return False
-
-    threshold_price = limitup_end.iloc[-1]['收盘']
 
     for index, row in consolidation_day23.iterrows():
         try:
