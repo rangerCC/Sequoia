@@ -5,6 +5,7 @@ import settings
 import utils
 import strategy.enter as enter
 from strategy import turtle_trade, climax_limitdown
+from strategy import backtrace_ma55
 from strategy import backtrace_ma250
 from strategy import breakthrough_platform
 from strategy import parking_apron
@@ -30,9 +31,10 @@ def prepare():
         '停机坪': parking_apron.check,
         '涨停大海龟': turtle_trade_limitup.check_enter,
         '高而窄的旗形': high_tight_flag.check,
+        '托底回踩55日均线': backtrace_ma55.check,
+        '回踩年线': backtrace_ma250.check,
         '均线多头': keep_increasing.check,
         # '放量上涨': enter.check_volume,
-        # '回踩年线': backtrace_ma250.check,
         # '突破平台': breakthrough_platform.check,
         # '无大幅回撤': low_backtrace_increase.check,
         # '放量跌停': climax_limitdown.check,
