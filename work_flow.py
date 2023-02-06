@@ -11,6 +11,7 @@ from strategy import parking_apron
 from strategy import low_backtrace_increase
 from strategy import keep_increasing
 from strategy import high_tight_flag
+from strategy import turtle_trade_limitup
 import akshare as ak
 import push
 import logging
@@ -26,15 +27,15 @@ def prepare():
     statistics(all_data, stocks)
 
     strategies = {
-        '放量上涨': enter.check_volume,
-        '均线多头': keep_increasing.check,
-        '停机坪': parking_apron.check,
-        '回踩年线': backtrace_ma250.check,
+        # '放量上涨': enter.check_volume,
+        # '均线多头': keep_increasing.check,
+        '缩量停机坪': parking_apron.check,
+        # '回踩年线': backtrace_ma250.check,
         # '突破平台': breakthrough_platform.check,
         # '无大幅回撤': low_backtrace_increase.check,
-        '海龟交易法则': turtle_trade.check_enter,
-        '高而窄的旗形': high_tight_flag.check,
-        '放量跌停': climax_limitdown.check,
+        '涨停大海龟': turtle_trade_limitup.check_enter,
+        # '高而窄的旗形': high_tight_flag.check,
+        # '放量跌停': climax_limitdown.check,
     }
 
     if datetime.datetime.now().weekday() == 0:
