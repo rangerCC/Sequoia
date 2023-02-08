@@ -28,12 +28,12 @@ def prepare():
     statistics(all_data, stocks)
 
     strategies = {
-        '停机坪': parking_apron.check,
-        '涨停大海龟': turtle_trade_limitup.check_enter,
-        '高而窄的旗形': high_tight_flag.check,
-        '托底回踩55日均线': backtrace_ma55.check,
-        '回踩年线': backtrace_ma250.check,
-        '均线多头': keep_increasing.check,
+        '今日停机坪': parking_apron.check,
+        '今日涨停大海龟': turtle_trade_limitup.check_enter,
+        '今日高而窄旗形': high_tight_flag.check,
+        '今日托底回踩55日均线': backtrace_ma55.check,
+        # '今日回踩年线': backtrace_ma250.check,
+        '今日均线多头': keep_increasing.check,
         # '放量上涨': enter.check_volume,
         # '突破平台': breakthrough_platform.check,
         # '无大幅回撤': low_backtrace_increase.check,
@@ -59,7 +59,7 @@ def check(stocks_data, strategy, strategy_func):
     m_filter = check_enter(end_date=end, strategy_fun=strategy_func)
     results = dict(filter(m_filter, stocks_data.items()))
     if len(results) > 0:
-        push.strategy('\n**************"{0}"**************\n{1}\n**************"{0}"**************\n'.format(strategy, list(results.keys())))
+        push.strategy('**************"{0}"**************\n\n{1}\n\n**************"{0}"**************\n'.format(strategy, list(results.keys())))
 
 
 def check_enter(end_date=None, strategy_fun=enter.check_volume):
@@ -82,7 +82,7 @@ def statistics(all_data, stocks):
     up5 = len(all_data.loc[(all_data['涨跌幅'] >= 5)])
     down5 = len(all_data.loc[(all_data['涨跌幅'] <= -5)])
 
-    msg = "\n涨停数：{}   跌停数：{}\n涨幅大于5%数：{}  跌幅大于5%数：{}\n\n".format(limitup, limitdown, up5, down5)
+    msg = "【今日A股数据概览】\n涨停数：{}\n跌停数：{}\n涨幅大于5%数：{}\n跌幅大于5%数：{}\n\n".format(limitup, limitdown, up5, down5)
     push.statistics(msg)
 
 # 过滤指定股票
