@@ -25,6 +25,10 @@ def prepare():
     all_data = ak.stock_zh_a_spot_em()
     subset = all_data[['代码', '名称']]
     stocks = [tuple(x) for x in subset.values]
+
+    # 过滤科创，300，ST
+    stocks = filter_stocks(stocks)
+
     statistics(all_data, stocks)
 
     strategies = {
@@ -40,11 +44,7 @@ def prepare():
         # '放量跌停': climax_limitdown.check,
     }
 
-    # 过滤科创，300，ST
-    stocks = filter_stocks(stocks)
-
     process(stocks, strategies)
-
 
     logging.info("************************ process   end ***************************************\n")
 
@@ -93,4 +93,5 @@ def filter_stocks(stock_list):
         stock[0].startswith('30') or
         'ST' in stock[1] or
         '*'  in stock[1] or
-        '退' in stock[1])]
+        '退' in stock[1] or
+        'N' in stock[1])]
