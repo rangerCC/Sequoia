@@ -19,15 +19,15 @@ import akshare as ak
 import push
 import logging
 import time
-import datetime
-
+from datetime import datetime, timedelta
 
 def prepare():
     logging.info("\n************************ process start ***************************************\n\n")
     all_data = ak.stock_zh_a_spot_em() # 实时行情
 
-    stock_market_activity = ak.stock_market_activity_legu()
-    statistics(stock_market_activity)
+    dt = statistics()
+    statistics_stocks(dt)
+    statistics_youzi(dt)
     
     subset = all_data[['代码', '名称', '涨跌幅']]
     stocks = [tuple(x) for x in subset.values]
@@ -82,22 +82,116 @@ def check_enter(end_date=None, strategy_fun=enter.check_volume):
     return end_date_filter
 
 
-# 统计数据
-def statistics(stock_market_activity):
-    msg = "【今日A股数据概览】\n"
+# 大盘统计数据
+def statistics():
+    msg = "【今日A股】\n"
+
+    # 大盘概览
+    msg = msg + "\n>>>>>>>>>>>> 大盘概览\n"
+    stock_market_activity = ak.stock_market_activity_legu()
     for index, row in stock_market_activity.iterrows() :
         if row[0] == '活跃度' or row[0] == '统计日期':
             msg = msg + "{}：{}\n".format(row[0],row[1])
         else :
             msg = msg + "{}：{}\n".format(row[0],int(row[1]))
+
+    push.statistics(msg)
+
+    return stock_market_activity.iloc[11][1].split(' ')[0]
+
+# 游资、股东统计数据
+def statistics_youzi(dt):
+    msg = "【今日A股游资、股东追踪】\n"
+
+    # 内部交易
+    msg = msg + "\n>>>>>>>>>>>> 内部交易\n"
+    stock_inner_trade_xq_df = ak.stock_inner_trade_xq()
+    subset = stock_inner_trade_xq_df[['股票代码', '股票名称', '变动日期', '变动人', '变动股数', '成交均价']]
+    subset_stocks = [tuple(x) for x in subset.values]
+    subset_stocks = filter_stocks(subset_stocks)
+    for stock in subset_stocks :
+        if stock[4] > 0 :
+            lowest_date_diff = datetime.date(datetime.strptime(dt, '%Y-%m-%d')) - \
+                stock[2]
+            if timedelta(days=0) <= lowest_date_diff <= timedelta(days=3):
+                msg = msg + "{} {}，{} 于 {} 以均价 {} 买入 {} 股\n".format(stock[0],stock[1],stock[3],stock[2],stock[5],stock[4])
+                
+    # 营业部买入追踪
+    msg = msg + "\n>>>>>>>>>>>> 营业部买入追踪\n"
+    stock_lhb_jgzz_sina_df = ak.stock_lhb_jgzz_sina(recent_day="5") #最近5日
+    subset = stock_lhb_jgzz_sina_df[['股票代码', '股票名称', '累积买入额', '买入次数', '累积卖出额', '卖出次数', '净额']]
+    subset_stocks = [tuple(x) for x in subset.values]
+    subset_stocks = filter_stocks(subset_stocks)
+    for stock in subset_stocks :
+        if stock[2] > 0 and stock[6]/stock[2] > 0.8:
+            msg = msg + "{} {}，累计买入 {}w\n".format(stock[0],stock[1],stock[6])
+
+    # 营业部上榜追踪
+    msg = msg + "\n>>>>>>>>>>>> 营业部上榜追踪\n"
+    stock_lhb_yytj_sina_df = ak.stock_lhb_yytj_sina(recent_day="5")
+    subset = stock_lhb_yytj_sina_df[['营业部名称', '累积购买额', '累积卖出额', '买入前三股票']]
+    subset_stocks = [tuple(x) for x in subset.values]
+    for stock in subset_stocks :
+        if stock[1] > 0 and stock[2]/stock[1] < 0.3 and stock[1]<2000:
+            msg = msg + "{} 累计买入 {}w，买入前三票为：{}\n".format(stock[0], stock[1], stock[3])
+
+    push.statistics(msg)
+
+# 个股统计数据
+def statistics_stocks(dt):
+    msg = "【今日A股个股追踪】\n"
+
+    # 持续缩量
+    msg = msg + "\n>>>>>>>>>>>> 连续缩量超过5天\n"
+    stock_rank_cxsl_ths_df = ak.stock_rank_cxsl_ths()
+    subset = stock_rank_cxsl_ths_df[['股票代码', '股票简称', '涨跌幅', '成交量', '缩量天数', '阶段涨跌幅', '所属行业']]
+    subset_stocks = [tuple(x) for x in subset.values]
+    subset_stocks = filter_stocks(subset_stocks)
+    for stock in subset_stocks :
+        if stock[4] > 5 :
+            msg = msg + "{} {}，连续缩量{}天，{}\n".format(stock[0],stock[1],stock[4],stock[6])
+
+    # 量价齐跌
+    msg = msg + "\n>>>>>>>>>>>> 量价齐跌\n"
+    stock_rank_ljqd_ths_df = ak.stock_rank_ljqd_ths()
+    subset = stock_rank_ljqd_ths_df[['股票代码', '股票简称', '量价齐跌天数', '阶段涨幅', '累计换手率', '所属行业']]
+    subset_stocks = [tuple(x) for x in subset.values]
+    subset_stocks = filter_stocks(subset_stocks)
+    for stock in subset_stocks :
+        if stock[2] > 3 and stock[4]>50 :
+            msg = msg + "{} {}，量价齐跌{}天，累计换手{}%，{}\n".format(stock[0],stock[1],stock[2],stock[4],stock[5])
+
+    # 强势股
+    # stock_zt_pool_strong_em_df = ak.stock_zt_pool_strong_em(date='20210521')
+    # print(stock_zt_pool_strong_em_df)
+
+    # 盘口异动
+    # stock_changes_em_df = ak.stock_changes_em(symbol="大笔买入") # '火箭发射', '大笔买入', '大笔卖出'
+    # print(stock_changes_em_df)
+
+    # 个股上榜追踪
+    # stock_lhb_ggtj_sina_df = ak.stock_lhb_ggtj_sina(recent_day="5")
+    # subset = stock_lhb_ggtj_sina_df[['股票代码', '股票名称', '累积买入额', '买入次数', '累积卖出额', '卖出次数', '净额']]
+    # subset_stocks = [tuple(x) for x in subset.values]
+    # subset_stocks = filter_stocks(subset_stocks)
+    # print(stock_lhb_ggtj_sina_df)
+
     push.statistics(msg)
 
 # 过滤指定股票
 def filter_stocks(stock_list):
     return [stock for stock in stock_list if not (
+        stock[0] == None or
+        stock[1] == None or
         stock[0].startswith('68') or
+        stock[0].startswith('SZ68') or
+        stock[0].startswith('SH68') or
         stock[0].startswith('83') or
+        stock[0].startswith('SZ83') or
+        stock[0].startswith('SH83') or
         stock[0].startswith('30') or
+        stock[0].startswith('SZ30') or
+        stock[0].startswith('SH30') or
         'ST' in stock[1] or
         '*'  in stock[1] or
         '退' in stock[1] or
