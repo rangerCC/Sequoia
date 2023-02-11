@@ -5,6 +5,8 @@ import settings
 import utils
 import strategy.enter as enter
 from strategy import turtle_trade, climax_limitdown
+from strategy import backtrace_ma10
+from strategy import backtrace_ma20
 from strategy import backtrace_ma55
 from strategy import backtrace_ma250
 from strategy import breakthrough_platform
@@ -21,32 +23,38 @@ import datetime
 
 
 def prepare():
-    logging.info("\n************************ process start ***************************************\n")
-    all_data = ak.stock_zh_a_spot_em()
-    subset = all_data[['代码', '名称']]
+    logging.info("\n************************ process start ***************************************\n\n")
+    all_data = ak.stock_zh_a_spot_em() # 实时行情
+
+    stock_market_activity = ak.stock_market_activity_legu()
+    statistics(stock_market_activity)
+    
+    subset = all_data[['代码', '名称', '涨跌幅']]
     stocks = [tuple(x) for x in subset.values]
-
-    # 过滤科创，300，ST
-    stocks = filter_stocks(stocks)
-
-    statistics(all_data, stocks)
+    stocks = filter_stocks(stocks) # 过滤科创，300，ST，N
 
     strategies = {
-        '今日停机坪': parking_apron.check,
-        '今日涨停大海龟': turtle_trade_limitup.check_enter,
-        '今日高而窄旗形': high_tight_flag.check,
-        '今日托底回踩55日均线': backtrace_ma55.check,
+        '亮哥的停机坪': parking_apron.check,
+        '亮哥的大海龟': turtle_trade_limitup.check_enter,
+        # '今日高而窄旗形': high_tight_flag.check,
+        # '今日托底回踩55日均线': backtrace_ma55.check,
         # '今日回踩年线': backtrace_ma250.check,
-        '今日均线多头': keep_increasing.check,
+        # '今日均线多头': keep_increasing.check,
         # '放量上涨': enter.check_volume,
         # '突破平台': breakthrough_platform.check,
         # '无大幅回撤': low_backtrace_increase.check,
         # '放量跌停': climax_limitdown.check,
+        # '低吸停机坪': parking_apron.check,
+        '低吸长线牛': backtrace_ma250.check,
+        '低吸波段牛': backtrace_ma55.check,
+        '低吸短线牛': backtrace_ma20.check,
+        '低吸超短牛': backtrace_ma10.check,
+        '近期突破牛': backtrace_ma10.check,
     }
 
     process(stocks, strategies)
 
-    logging.info("************************ process   end ***************************************\n")
+    logging.info("\n************************ process   end ***************************************\n")
 
 def process(stocks, strategies):
     stocks_data = data_fetcher.run(stocks)
@@ -75,14 +83,13 @@ def check_enter(end_date=None, strategy_fun=enter.check_volume):
 
 
 # 统计数据
-def statistics(all_data, stocks):
-    limitup = len(all_data.loc[(all_data['涨跌幅'] >= 9.5)])
-    limitdown = len(all_data.loc[(all_data['涨跌幅'] <= -9.5)])
-
-    up5 = len(all_data.loc[(all_data['涨跌幅'] >= 5)])
-    down5 = len(all_data.loc[(all_data['涨跌幅'] <= -5)])
-
-    msg = "【今日A股数据概览】\n涨停数：{}\n跌停数：{}\n涨幅大于5%数：{}\n跌幅大于5%数：{}\n\n".format(limitup, limitdown, up5, down5)
+def statistics(stock_market_activity):
+    msg = "【今日A股数据概览】\n"
+    for index, row in stock_market_activity.iterrows() :
+        if row[0] == '活跃度' or row[0] == '统计日期':
+            msg = msg + "{}：{}\n".format(row[0],row[1])
+        else :
+            msg = msg + "{}：{}\n".format(row[0],int(row[1]))
     push.statistics(msg)
 
 # 过滤指定股票

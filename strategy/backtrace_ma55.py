@@ -12,10 +12,10 @@ from datetime import datetime, timedelta
 # 当然，该函数中的参数可能存在过拟合的问题
 
 
-# 回踩55日线策略
+# 回踩10日线策略
 def check(code_name, data, end_date=None, threshold=60):
-    if len(data) < 55:
-        logging.debug("{0}:样本小于55天...\n".format(code_name))
+    if len(data) < 60:
+        logging.debug("{0}:样本小于 60 天...\n".format(code_name))
         return
     
     data['ma10'] = pd.Series(tl.MA(data['收盘'].values, 10), index=data.index.values)
@@ -29,62 +29,67 @@ def check(code_name, data, end_date=None, threshold=60):
             return False
         mask = (data['日期'] <= end_date)
         data = data.loc[mask]
-
     data = data.tail(n=threshold)
-
-    # 最后收盘、开盘价
-    last_close = data.iloc[-1]['收盘']
-    last_open =  data.iloc[-1]['开盘']
 
     # 区间最低点
     lowest_row = data.iloc[-1]
     # 区间最高点
     highest_row = data.iloc[-1]
-
     # 近期低点
     recent_lowest_row = data.iloc[-1]
 
     # 计算区间最高、最低价格
+    hang_up_exists = False
     for index, row in data.iterrows():
+        if row['涨跌幅'] > 9.8:
+            hang_up_exists = True
         if row['收盘'] > highest_row['收盘']:
             highest_row = row
         elif row['收盘'] < lowest_row['收盘']:
             lowest_row = row
 
-    if lowest_row['成交量'] == 0 or highest_row['成交量'] == 0:
+    if (lowest_row['成交量'] == 0) or (highest_row['成交量'] == 0) or (not hang_up_exists):
         return False
 
     data_front = data.loc[(data['日期'] < highest_row['日期'])]
     data_end = data.loc[(data['日期'] >= highest_row['日期'])]
-
-    if data_front.empty:
-        return False
-    # 前半段由55日线以下向上突破
-    if not (data_front.iloc[0]['收盘'] < data_front.iloc[0]['ma55'] and
-            data_front.iloc[-1]['收盘'] > data_front.iloc[-1]['ma55']):
-        return False
-
-    if not data_end.empty:
-        # 后半段必须在55日线以上运行（回踩55日线）
-        for index, row in data_end.iterrows():
-            if row['收盘'] < row['ma55']:
-                return False
-            if row['收盘'] < recent_lowest_row['收盘']:
-                recent_lowest_row = row
-
-    date_diff = datetime.date(datetime.strptime(recent_lowest_row['日期'], '%Y-%m-%d')) - \
-                datetime.date(datetime.strptime(highest_row['日期'], '%Y-%m-%d'))
-
-    if not(timedelta(days=10) <= date_diff <= timedelta(days=50)):
+    if data_front.empty or data_end.empty :
         return False
     
-    # 回踩伴随缩量
-    vol_ratio = highest_row['成交量']/recent_lowest_row['成交量']
-    back_ratio = recent_lowest_row['收盘'] / highest_row['收盘']
-    # 昨日收盘价较低点上涨幅度小于3%
-    increase_ratio = last_close / recent_lowest_row['收盘']
+    # 前半段由 55 日线以下向上突破
+    if not (data_front.iloc[0]['收盘'] < data_front.iloc[0]['ma55'] or
+            data_front.iloc[-1]['收盘'] < data_front.iloc[-1]['ma55']):
+        return False
 
-    if not (vol_ratio > 2 and back_ratio < 0.8 and last_close < last_open and increase_ratio<1.03) :
+    # 后半段在 55 日线以上运行（回踩 55 日线）
+    for index, row in data_end.iterrows():
+        if row['收盘'] < row['ma55']:
+                return False
+        if row['收盘'] < recent_lowest_row['收盘']:
+                recent_lowest_row = row
+
+    # 近2天最低
+    lowest_date_diff = datetime.date(datetime.strptime(recent_lowest_row['日期'], '%Y-%m-%d')) - \
+                datetime.date(datetime.strptime(data.iloc[-1]['日期'], '%Y-%m-%d'))
+    if not(timedelta(days=0) <= lowest_date_diff <= timedelta(days=1)):
+        return False
+    
+    # 近期回调 10-50 天
+    back_date_diff = datetime.date(datetime.strptime(recent_lowest_row['日期'], '%Y-%m-%d')) - \
+                datetime.date(datetime.strptime(highest_row['日期'], '%Y-%m-%d'))
+    if not(timedelta(days=10) <= back_date_diff <= timedelta(days=50)):
+        return False
+    
+    # 回踩且缩量
+    back_ratio = (highest_row['收盘'] - recent_lowest_row['收盘']) / highest_row['收盘']
+    vol_ratio = highest_row['成交量']/recent_lowest_row['成交量']
+    if back_ratio < 0.03 or vol_ratio < 2 :
+        return False
+
+    # 收盘涨跌幅小于1%且收盘价较低点上涨幅度小于2%
+    up_down_range = data.iloc[-1]['涨跌幅']
+    increase_ratio = (recent_lowest_row['收盘'] - data.iloc[-1]['收盘']) / recent_lowest_row['收盘']
+    if up_down_range >= 1 or increase_ratio >= 0.02 :
         return False
 
     return True

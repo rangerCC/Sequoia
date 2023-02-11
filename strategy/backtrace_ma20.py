@@ -12,16 +12,15 @@ from datetime import datetime, timedelta
 # 当然，该函数中的参数可能存在过拟合的问题
 
 
-# 回踩 250 日线策略
-def check(code_name, data, end_date=None, threshold=120):
-    if len(data) < 120:
-        logging.debug("{0}:样本小于 120 天...\n".format(code_name))
+# 回踩10日线策略
+def check(code_name, data, end_date=None, threshold=40):
+    if len(data) < 40:
+        logging.debug("{0}:样本小于 40 天...\n".format(code_name))
         return
     
     data['ma10'] = pd.Series(tl.MA(data['收盘'].values, 10), index=data.index.values)
     data['ma20'] = pd.Series(tl.MA(data['收盘'].values, 20), index=data.index.values)
     data['ma55'] = pd.Series(tl.MA(data['收盘'].values, 55), index=data.index.values)
-    data['ma250'] = pd.Series(tl.MA(data['收盘'].values, 55), index=data.index.values)
 
     begin_date = data.iloc[0].日期
     if end_date is not None:
@@ -57,22 +56,28 @@ def check(code_name, data, end_date=None, threshold=120):
     if data_front.empty or data_end.empty :
         return False
     
-    # 前半段由 250 日线以下向上突破
-    if not (data_front.iloc[0]['收盘'] < data_front.iloc[0]['ma250'] or
-            data_front.iloc[-1]['收盘'] < data_front.iloc[-1]['ma250']):
+    # 前半段由 20 日线以下向上突破
+    if not (data_front.iloc[0]['收盘'] < data_front.iloc[0]['ma20'] or
+            data_front.iloc[-1]['收盘'] < data_front.iloc[-1]['ma20']):
         return False
 
-    # 后半段在 250 日线以上运行（回踩 250 日线）
+    # 后半段在 20 日线以上运行（回踩 20 日线）
     for index, row in data_end.iterrows():
-        if row['收盘'] < row['ma250']:
+        if row['收盘'] < row['ma20']:
                 return False
         if row['收盘'] < recent_lowest_row['收盘']:
                 recent_lowest_row = row
+
+    # 近2天最低
+    lowest_date_diff = datetime.date(datetime.strptime(recent_lowest_row['日期'], '%Y-%m-%d')) - \
+                datetime.date(datetime.strptime(data.iloc[-1]['日期'], '%Y-%m-%d'))
+    if not(timedelta(days=0) <= lowest_date_diff <= timedelta(days=1)):
+        return False
     
-    # 近期回调 30-200 天
+    # 近期回调 5-20 天
     back_date_diff = datetime.date(datetime.strptime(recent_lowest_row['日期'], '%Y-%m-%d')) - \
                 datetime.date(datetime.strptime(highest_row['日期'], '%Y-%m-%d'))
-    if not(timedelta(days=30) <= back_date_diff <= timedelta(days=100)):
+    if not(timedelta(days=5) <= back_date_diff <= timedelta(days=20)):
         return False
     
     # 回踩且缩量
@@ -88,4 +93,3 @@ def check(code_name, data, end_date=None, threshold=120):
         return False
 
     return True
-
