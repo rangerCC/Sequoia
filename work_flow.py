@@ -50,7 +50,7 @@ def prepare():
         '低吸波段牛': backtrace_ma55.check,
         '低吸短线牛': backtrace_ma20.check,
         '低吸超短牛': backtrace_ma10.check,
-        '近期突破牛': backtrace_ma10.check,
+        # '近期突破牛': backtrace_ma10.check,
     }
 
     process(stocks, strategies)
