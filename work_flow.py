@@ -28,6 +28,7 @@ def prepare():
     dt = statistics()
     statistics_stocks(dt)
     statistics_youzi(dt)
+    statistics_guanzhu(dt)
     
     subset = all_data[['代码', '名称', '涨跌幅']]
     stocks = [tuple(x) for x in subset.values]
@@ -134,6 +135,32 @@ def statistics_youzi(dt):
     for stock in subset_stocks :
         if stock[1] > 0 and stock[2]/stock[1] < 0.3 and stock[1]<2000:
             msg = msg + "{} 累计买入 {}w，买入前三票为：{}\n".format(stock[0], stock[1], stock[3])
+
+    push.statistics(msg)
+
+# 近1周和一月股票关注舆情
+def statistics_guanzhu(dt):
+    msg = "【近期热搜个股】\n"
+
+    # 近一周热搜
+    msg = msg + "\n>>>>>>>>>>>> 近一周热搜\n"
+    stock_js_weibo_report_df_week = ak.stock_js_weibo_report(time_period="CNDAY7")
+    subset = stock_js_weibo_report_df_week[['name', 'rate']]
+    subset_stocks = [tuple(x) for x in subset.values]
+    subset_stocks = sorted(subset_stocks, key=lambda x: x[1])
+    msg = msg + "股票\t热度\n"
+    for stock in subset_stocks :
+        msg = msg + "{}\t{}\n".format(stock[0], stock[1])
+                
+    # 近一月热搜
+    msg = msg + "\n>>>>>>>>>>>> 近一月热搜\n"
+    stock_js_weibo_report_df_month = ak.stock_js_weibo_report(time_period="CNDAY30")
+    subset = stock_js_weibo_report_df_month[['name', 'rate']]
+    subset_stocks = [tuple(x) for x in subset.values]
+    subset_stocks = sorted(subset_stocks, key=lambda x: x[1])
+    msg = msg + "股票\t热度\n"
+    for stock in subset_stocks :
+        msg = msg + "{}\t{}\n".format(stock[0], stock[1])
 
     push.statistics(msg)
 
