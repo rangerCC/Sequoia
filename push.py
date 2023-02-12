@@ -4,10 +4,9 @@ import logging
 import settings
 from wxpusher import WxPusher
 
-
 def push(msg):
     if settings.config['push']['enable']:
-        uids = settings.config['push']['wxpusher_uids'].split(',')
+        uids = settings.config['push']['wxpusher_uids']
         token = settings.config['push']['wxpusher_token']
         if not (len(uids)==0 and len(token)==0) :
             response = WxPusher.send_message(msg, uids=uids,token=token)

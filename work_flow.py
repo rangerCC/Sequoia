@@ -35,8 +35,6 @@ def prepare():
     stocks = filter_stocks(stocks) # 过滤科创，300，ST，N
 
     strategies = {
-        '亮哥的停机坪': parking_apron.check,
-        '亮哥的大海龟': turtle_trade_limitup.check_enter,
         # '今日高而窄旗形': high_tight_flag.check,
         # '今日托底回踩55日均线': backtrace_ma55.check,
         # '今日回踩年线': backtrace_ma250.check,
@@ -45,17 +43,19 @@ def prepare():
         # '突破平台': breakthrough_platform.check,
         # '无大幅回撤': low_backtrace_increase.check,
         # '放量跌停': climax_limitdown.check,
-        # '低吸停机坪': parking_apron.check,
-        '低吸长线牛': backtrace_ma250.check,
-        '低吸波段牛': backtrace_ma55.check,
-        '低吸短线牛': backtrace_ma20.check,
+        '低吸大海龟': turtle_trade_limitup.check_enter,
+        '低吸停机坪': parking_apron.check,
         '低吸超短牛': backtrace_ma10.check,
-        # '近期突破牛': backtrace_ma10.check,
+        '低吸短线牛': backtrace_ma20.check,
+        '低吸波段牛': backtrace_ma55.check,
+        '低吸长线牛': backtrace_ma250.check,
+        '近期突破牛': backtrace_ma10.check,
     }
 
     process(stocks, strategies)
 
     logging.info("\n************************ process   end ***************************************\n")
+
 
 def process(stocks, strategies):
     stocks_data = data_fetcher.run(stocks)
@@ -63,12 +63,16 @@ def process(stocks, strategies):
         check(stocks_data, strategy, strategy_func)
         time.sleep(2)
 
+
 def check(stocks_data, strategy, strategy_func):
     end = settings.config['end_date']
     m_filter = check_enter(end_date=end, strategy_fun=strategy_func)
     results = dict(filter(m_filter, stocks_data.items()))
     if len(results) > 0:
-        push.strategy('**************"{0}"**************\n\n{1}\n\n**************"{0}"**************\n'.format(strategy, list(results.keys())))
+        stock_msg = "|股票代码------股票名称------涨跌幅|\n"
+        for stock in list(results.keys()) :
+            stock_msg = stock_msg + "| {} ------{}------{}|\n".format(stock[0],stock[1],stock[2])
+        push.strategy('**************"{0}"**************\n\n{1}\n**************"{0}"**************\n'.format(strategy, stock_msg))
 
 
 def check_enter(end_date=None, strategy_fun=enter.check_volume):
@@ -138,6 +142,7 @@ def statistics_youzi(dt):
 
     push.statistics(msg)
 
+
 # 近1周和一月股票关注舆情
 def statistics_guanzhu(dt):
     msg = "【近期热搜个股】\n"
@@ -163,6 +168,7 @@ def statistics_guanzhu(dt):
         msg = msg + "{}\t{}\n".format(stock[0], stock[1])
 
     push.statistics(msg)
+
 
 # 个股统计数据
 def statistics_stocks(dt):
@@ -204,6 +210,7 @@ def statistics_stocks(dt):
     # print(stock_lhb_ggtj_sina_df)
 
     push.statistics(msg)
+
 
 # 过滤指定股票
 def filter_stocks(stock_list):
