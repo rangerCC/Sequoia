@@ -40,4 +40,5 @@ def update_users() :
         if len(user['uid']) > 0 :
             uids.append(user['uid'])
     if len(uids) > 0 :
-        config['wxpusher_uids'] = uids
+        config['push']['wxpusher_uids'] = []
+        config['push']['wxpusher_uids'] = uids
