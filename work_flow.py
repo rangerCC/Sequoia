@@ -32,7 +32,7 @@ def prepare():
     
     subset = all_data[['代码', '名称', '涨跌幅']]
     stocks = [tuple(x) for x in subset.values]
-    stocks = filter_stocks(stocks) # 过滤科创，300，ST，N
+    stocks = filter_stocks(stocks) # 主板，非 ST
 
     strategies = {
         # '今日高而窄旗形': high_tight_flag.check,
@@ -49,7 +49,7 @@ def prepare():
         '低吸短线牛': backtrace_ma20.check,
         '低吸波段牛': backtrace_ma55.check,
         '低吸长线牛': backtrace_ma250.check,
-        '近期突破牛': backtrace_ma10.check,
+        # '近期突破牛': backtrace_ma10.check,
     }
 
     process(stocks, strategies)
@@ -214,19 +214,15 @@ def statistics_stocks(dt):
 
 # 过滤指定股票
 def filter_stocks(stock_list):
-    return [stock for stock in stock_list if not (
-        stock[0] == None or
-        stock[1] == None or
-        stock[0].startswith('68') or
-        stock[0].startswith('SZ68') or
-        stock[0].startswith('SH68') or
-        stock[0].startswith('83') or
-        stock[0].startswith('SZ83') or
-        stock[0].startswith('SH83') or
-        stock[0].startswith('30') or
-        stock[0].startswith('SZ30') or
-        stock[0].startswith('SH30') or
+    return [stock for stock in stock_list if (
+        (stock[0] != None and stock[1] != None) and (
+        stock[0].startswith('00') or
+        stock[0].startswith('60') or
+        stock[0].startswith('SZ00') or
+        stock[0].startswith('SZ60') or
+        stock[0].startswith('SH00') or
+        stock[0].startswith('SH60')) and not (
         'ST' in stock[1] or
         '*'  in stock[1] or
         '退' in stock[1] or
-        'N' in stock[1])]
+        'N' in stock[1]))]
