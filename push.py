@@ -13,7 +13,6 @@ def push(msg,type=0):
         verifyPay = 0
         if type == 0 :
             uids = settings.config['push']['wxpusher_uids']
-            topics = settings.config['push']['wxpusher_topics']
         if type > 0 :
             topics = settings.config['push']['wxpusher_topics']
         if type > 1 :
