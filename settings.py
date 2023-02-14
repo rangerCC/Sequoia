@@ -16,6 +16,7 @@ def init():
     df = df.loc[mask]
     top_list = df['代码'].tolist()
     
+    WxPusher.default_token = config['push']['wxpusher_token']
     # 更新用户列表
     update_users()
 
@@ -23,9 +24,7 @@ def init():
 def config():
     return config
 
-
 def update_users() :
-    WxPusher.default_token = config['push']['wxpusher_token']
     res = WxPusher.query_user(1, 1000)
     if (not res) or (not res['code'] == 1000) :
         return

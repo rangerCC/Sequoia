@@ -69,9 +69,9 @@ def check(stocks_data, strategy, strategy_func):
     m_filter = check_enter(end_date=end, strategy_fun=strategy_func)
     results = dict(filter(m_filter, stocks_data.items()))
     if len(results) > 0:
-        stock_msg = "|股票代码------股票名称------涨跌幅|\n"
+        stock_msg = "|股票代码      股票名称      涨跌幅|\n"
         for stock in list(results.keys()) :
-            stock_msg = stock_msg + "| {} ------{}------{}|\n".format(stock[0],stock[1],stock[2])
+            stock_msg = stock_msg + "|{}       {}      {}|\n".format(stock[0],stock[1],stock[2])
         push.strategy('**************"{0}"**************\n\n{1}\n**************"{0}"**************\n'.format(strategy, stock_msg))
 
 
