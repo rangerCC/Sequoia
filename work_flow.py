@@ -26,6 +26,7 @@ def prepare():
     all_data = ak.stock_zh_a_spot_em() # 实时行情
 
     dt = statistics()
+    statistics_limitup(dt)
     statistics_stocks(dt)
     statistics_youzi(dt)
     statistics_guanzhu(dt)
@@ -208,6 +209,23 @@ def statistics_stocks(dt):
     # subset_stocks = [tuple(x) for x in subset.values]
     # subset_stocks = filter_stocks(subset_stocks)
     # print(stock_lhb_ggtj_sina_df)
+
+    push.statistics(msg)
+
+# 涨停数据统计
+def statistics_limitup(dt):
+    msg = "【今日A股涨停追踪】\n"
+
+    # 持续缩量
+    msg = msg + "\n>>>>>>>>>>>> 涨停个股数据\n"
+    standardlize_dt = dt.replace('-','') # 规范 dt 参数格式
+    stock_zt_pool_em_df = ak.stock_zt_pool_em(standardlize_dt)
+    subset = stock_zt_pool_em_df[['代码', '名称', '涨跌幅', '换手率', '最后封板时间', '炸板次数', '连板数', '所属行业']]
+    subset_stocks = [tuple(x) for x in subset.values]
+    subset_stocks = filter_stocks(subset_stocks)
+    for stock in subset_stocks :
+        if stock[6] == 1 and stock[5] == 0 :
+            msg = msg + "{} {}，封版时间：{}，{}\n".format(stock[0],stock[1],stock[4],stock[7])
 
     push.statistics(msg)
 

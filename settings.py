@@ -25,6 +25,9 @@ def config():
     return config
 
 def update_users() :
+    if not config['push']['enable']:
+        return
+    
     res = WxPusher.query_user(1, 1000)
     if (not res) or (not res['code'] == 1000) :
         return
