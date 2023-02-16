@@ -32,7 +32,7 @@ def process(stock,all_data):
     current_price = stock_data['最新价']
     if up > 0 and current_price >= up :
         msg = "【个股追踪提醒】\n"
-        msg = '\n{} {}\n当前股价【{}】\n已上涨至预设定价格【{}】\n'.format(stock_data['代码'], stock_data['名称'], stock_data['最新价'], up)
+        msg = msg + '\n{} {}\n\n当前股价【{}】\n\n已上涨至预设定价格【{}】\n'.format(stock_data['代码'], stock_data['名称'], stock_data['最新价'], up)
         push.statistics(msg)
 
     if down > 0 and current_price <= down :
