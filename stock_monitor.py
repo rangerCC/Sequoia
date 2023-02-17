@@ -37,7 +37,7 @@ def process(stock,all_data):
 
     if down > 0 and current_price <= down :
         msg = "【个股追踪提醒】\n"
-        msg = '\n{} {}\n当前股价【{}】\n已下跌至预设定价格【{}】\n'.format(stock_data['代码'], stock_data['名称'], stock_data['最新价'], down)
+        msg = msg + '\n{} {}\n当前股价【{}】\n已下跌至预设定价格【{}】\n'.format(stock_data['代码'], stock_data['名称'], stock_data['最新价'], down)
         push.statistics(msg)
 
     # 个股信息

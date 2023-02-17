@@ -23,10 +23,12 @@ logging.getLogger().setLevel(logging.INFO)
 settings.init()
 
 if settings.config['cron']:
-    schedule.every().day.at("15:10").do(job1)
-
+    # 个股监控
     timeinterval = settings.config['monitor']['timeinterval']
     schedule.every(timeinterval).seconds.do(job2)
+
+    # 优质股挖掘
+    schedule.every().day.at("15:10").do(job1)
 
     while True:
         schedule.run_pending()
