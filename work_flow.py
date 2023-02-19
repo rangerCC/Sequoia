@@ -28,7 +28,7 @@ def prepare():
     dt = statistics()
     statistics_stocks(dt)
     statistics_youzi(dt)
-    statistics_guanzhu(dt)
+    # statistics_guanzhu(dt)
     
     subset = all_data[['代码', '名称', '涨跌幅']]
     stocks = [tuple(x) for x in subset.values]
@@ -43,12 +43,12 @@ def prepare():
         # '突破平台': breakthrough_platform.check,
         # '无大幅回撤': low_backtrace_increase.check,
         # '放量跌停': climax_limitdown.check,
-        '低吸大海龟': turtle_trade_limitup.check_enter,
-        '低吸停机坪': parking_apron.check,
-        '低吸超短牛': backtrace_ma10.check,
-        '低吸短线牛': backtrace_ma20.check,
-        '低吸波段牛': backtrace_ma55.check,
-        '低吸长线牛': backtrace_ma250.check,
+        '大海龟': turtle_trade_limitup.check_enter,
+        '停机坪': parking_apron.check,
+        # '低吸超短牛': backtrace_ma10.check,
+        # '低吸短线牛': backtrace_ma20.check,
+        '波段牛': backtrace_ma55.check,
+        '长线牛': backtrace_ma250.check,
         # '近期突破牛': backtrace_ma10.check,
     }
 
@@ -174,24 +174,24 @@ def statistics_stocks(dt):
     msg = "【今日A股个股追踪】\n"
 
     # 持续缩量
-    msg = msg + "\n>>>>>>>>>>>> 连续缩量超过5天\n"
+    msg = msg + "\n>>>>>>>>>>>> 连续缩量1周及以上\n"
     stock_rank_cxsl_ths_df = ak.stock_rank_cxsl_ths()
     subset = stock_rank_cxsl_ths_df[['股票代码', '股票简称', '涨跌幅', '成交量', '缩量天数', '阶段涨跌幅', '所属行业']]
     subset_stocks = [tuple(x) for x in subset.values]
     subset_stocks = filter_stocks(subset_stocks)
     for stock in subset_stocks :
-        if stock[4] > 5 :
+        if stock[4] >= 7 :
             msg = msg + "{} {}，连续缩量{}天，{}\n".format(stock[0],stock[1],stock[4],stock[6])
 
     # 量价齐跌
-    msg = msg + "\n>>>>>>>>>>>> 量价齐跌\n"
-    stock_rank_ljqd_ths_df = ak.stock_rank_ljqd_ths()
-    subset = stock_rank_ljqd_ths_df[['股票代码', '股票简称', '量价齐跌天数', '阶段涨幅', '累计换手率', '所属行业']]
-    subset_stocks = [tuple(x) for x in subset.values]
-    subset_stocks = filter_stocks(subset_stocks)
-    for stock in subset_stocks :
-        if stock[2] > 3 and stock[4]>50 :
-            msg = msg + "{} {}，量价齐跌{}天，累计换手{}%，{}\n".format(stock[0],stock[1],stock[2],stock[4],stock[5])
+    # msg = msg + "\n>>>>>>>>>>>> 量价齐跌\n"
+    # stock_rank_ljqd_ths_df = ak.stock_rank_ljqd_ths()
+    # subset = stock_rank_ljqd_ths_df[['股票代码', '股票简称', '量价齐跌天数', '阶段涨幅', '累计换手率', '所属行业']]
+    # subset_stocks = [tuple(x) for x in subset.values]
+    # subset_stocks = filter_stocks(subset_stocks)
+    # for stock in subset_stocks :
+    #     if stock[2] > 3 and stock[4]>50 :
+    #         msg = msg + "{} {}，量价齐跌{}天，累计换手{}%，{}\n".format(stock[0],stock[1],stock[2],stock[4],stock[5])
 
     # 强势股
     # stock_zt_pool_strong_em_df = ak.stock_zt_pool_strong_em(date='20210521')

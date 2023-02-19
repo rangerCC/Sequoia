@@ -4,16 +4,21 @@ import utils
 import logging
 import work_flow
 import stock_monitor
+import everyday_news
 import settings
 import schedule
 import time
 
+def job0():
+    everyday_news.prepare()
 
 def job1():
+    # work_flow.prepare()
     if utils.is_weekday():
         work_flow.prepare()
 
 def job2():
+    # stock_monitor.prepare()
     if utils.is_weekday():
         stock_monitor.prepare()
 
@@ -21,6 +26,9 @@ def job2():
 logging.basicConfig(format='%(asctime)s %(message)s', filename='result.log')
 logging.getLogger().setLevel(logging.INFO)
 settings.init()
+
+# 每日要闻
+job0()
 
 if settings.config['cron']:
     # 个股监控
@@ -35,4 +43,4 @@ if settings.config['cron']:
         time.sleep(1)
 else:
     job1()
-    job2()
+    # job2()
