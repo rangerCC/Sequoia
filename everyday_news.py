@@ -18,15 +18,17 @@ def prepare():
     news_cctv_df = ak.news_cctv(date=dt)
     fav_news = news_cctv_df.loc[(news_cctv_df['title'] == '国内联播快讯')]
     if not fav_news.empty :
-        process(fav_news)
+        process(dt, fav_news)
 
 
-def process(fav_news):
-    msg = "【国内联播快讯】\n"
+def process(dt, fav_news):
+    msg = "【{} 国内联播快讯】\n".format(dt)
     split_news = fav_news['content'].iloc[0].split('。')
     index = 1
     for a_new in split_news :
-        msg = msg + '\n【{}】{}\n'.format(index, a_new)
+        if len(a_new)>0 :
+            msg = msg + '\n【{}】{}\n'.format(index, a_new)
+            index += 1
     push.statistics(msg)
 
     # 个股信息
