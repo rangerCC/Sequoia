@@ -28,7 +28,7 @@ logging.getLogger().setLevel(logging.INFO)
 settings.init()
 
 # 每日要闻
-job0()
+# job0()
 
 if settings.config['cron']:
     # 个股监控
@@ -43,4 +43,4 @@ if settings.config['cron']:
         time.sleep(1)
 else:
     job1()
-    # job2()
+    job2()
