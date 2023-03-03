@@ -26,9 +26,9 @@ def prepare():
     all_data = ak.stock_zh_a_spot_em() # 实时行情
 
     dt = statistics()
-    # statistics_stocks(dt)
-    # statistics_youzi(dt)
-    # statistics_guanzhu(dt)
+    statistics_stocks(dt)
+    statistics_youzi(dt)
+    statistics_guanzhu(dt)
     
     subset = all_data[['代码', '名称', '涨跌幅']]
     stocks = [tuple(x) for x in subset.values]
