@@ -19,20 +19,27 @@ import akshare as ak
 import push
 import logging
 import time
-from datetime import datetime, timedelta
+from datetime import datetime,timedelta
 
 def prepare():
     logging.info("\n************************ process start ***************************************\n\n")
-    all_data = ak.stock_zh_a_spot_em() # 实时行情
+    # process_informations()
+    process_strategies()
+    logging.info("\n************************ process   end ***************************************\n")
 
-    dt = statistics()
+
+def process_informations() :
+    dt = statistics_latest()
     statistics_stocks(dt)
     statistics_youzi(dt)
     statistics_guanzhu(dt)
-    
+
+
+def process_strategies() :
+    all_data = ak.stock_zh_a_spot_em() # 实时行情
     subset = all_data[['代码', '名称', '涨跌幅']]
     stocks = [tuple(x) for x in subset.values]
-    stocks = filter_stocks(stocks) # 主板，非 ST
+    stocks = utils.filter_stocks(stocks)
 
     strategies = {
         # '今日高而窄旗形': high_tight_flag.check,
@@ -43,21 +50,16 @@ def prepare():
         # '突破平台': breakthrough_platform.check,
         # '无大幅回撤': low_backtrace_increase.check,
         # '放量跌停': climax_limitdown.check,
-        '大海龟': turtle_trade_limitup.check_enter,
-        '停机坪': parking_apron.check,
-        '低吸超短牛': backtrace_ma10.check,
-        '低吸短线牛': backtrace_ma20.check,
-        '波段牛': backtrace_ma55.check,
-        '长线牛': backtrace_ma250.check,
+        # '大海龟': turtle_trade_limitup.check,
+        # '停机坪': parking_apron.check,
+        # '低吸超短牛': backtrace_ma10.check,
+        # '低吸短线牛': backtrace_ma20.check,
+        # '波段牛': backtrace_ma55.check,
+        # '长线牛': backtrace_ma250.check,
         # '近期突破牛': backtrace_ma10.check,
     }
 
-    process(stocks, strategies)
-
-    logging.info("\n************************ process   end ***************************************\n")
-
-
-def process(stocks, strategies):
+    # 依次处理策略
     stocks_data = data_fetcher.run(stocks)
     for strategy, strategy_func in strategies.items():
         check(stocks_data, strategy, strategy_func)
@@ -69,9 +71,12 @@ def check(stocks_data, strategy, strategy_func):
     m_filter = check_enter(end_date=end, strategy_fun=strategy_func)
     results = dict(filter(m_filter, stocks_data.items()))
     if len(results) > 0:
-        stock_msg = "|股票代码      股票名称      涨跌幅|\n"
+        stock_msg = "|股票代码      股票名称      涨跌幅      行业      流通值|\n"
         for stock in list(results.keys()) :
-            stock_msg = stock_msg + "|{}       {}      {}|\n".format(stock[0],stock[1],stock[2])
+            stock_data = ak.stock_individual_info_em(symbol=stock[0])
+            industry = stock_data.loc[stock_data['item']=='行业'].value.iloc[0]
+            equity = (stock_data.loc[stock_data['item']=='流通市值'].value.iloc[0])/100000000.0
+            stock_msg = stock_msg + "|{}       {}      {}      {}      {:.2f}亿|\n".format(stock[0],stock[1],stock[2],industry,equity)
         push.strategy('**************"{0}"**************\n\n{1}\n**************"{0}"**************\n'.format(strategy, stock_msg))
 
 
@@ -87,7 +92,7 @@ def check_enter(end_date=None, strategy_fun=enter.check_volume):
 
 
 # 大盘统计数据
-def statistics():
+def statistics_latest():
     msg = "【今日A股】\n"
 
     # 大盘概览
@@ -112,7 +117,7 @@ def statistics_youzi(dt):
     stock_inner_trade_xq_df = ak.stock_inner_trade_xq()
     subset = stock_inner_trade_xq_df[['股票代码', '股票名称', '变动日期', '变动人', '变动股数', '成交均价']]
     subset_stocks = [tuple(x) for x in subset.values]
-    subset_stocks = filter_stocks(subset_stocks)
+    subset_stocks = utils.filter_stocks(subset_stocks)
     for stock in subset_stocks :
         if stock[4] > 0 :
             lowest_date_diff = datetime.date(datetime.strptime(dt, '%Y-%m-%d')) - \
@@ -125,7 +130,7 @@ def statistics_youzi(dt):
     stock_lhb_jgzz_sina_df = ak.stock_lhb_jgzz_sina(recent_day="5") #最近5日
     subset = stock_lhb_jgzz_sina_df[['股票代码', '股票名称', '累积买入额', '买入次数', '累积卖出额', '卖出次数', '净额']]
     subset_stocks = [tuple(x) for x in subset.values]
-    subset_stocks = filter_stocks(subset_stocks)
+    subset_stocks = utils.filter_stocks(subset_stocks)
     for stock in subset_stocks :
         if stock[2] > 0 and stock[6]/stock[2] > 0.8:
             msg = msg + "{} {}，累计买入 {}w\n".format(stock[0],stock[1],stock[6])
@@ -155,7 +160,7 @@ def statistics_guanzhu(dt):
     msg = msg + "股票\t热度\n"
     for stock in subset_stocks :
         msg = msg + "{}\t{}\n".format(stock[0], stock[1])
-                
+    
     # 近一月热搜
     msg = msg + "\n>>>>>>>>>>>> 近一月热搜\n"
     stock_js_weibo_report_df_month = ak.stock_js_weibo_report(time_period="CNDAY30")
@@ -178,7 +183,7 @@ def statistics_stocks(dt):
     stock_rank_cxsl_ths_df = ak.stock_rank_cxsl_ths()
     subset = stock_rank_cxsl_ths_df[['股票代码', '股票简称', '涨跌幅', '成交量', '缩量天数', '阶段涨跌幅', '所属行业']]
     subset_stocks = [tuple(x) for x in subset.values]
-    subset_stocks = filter_stocks(subset_stocks)
+    subset_stocks = utils.filter_stocks(subset_stocks)
     for stock in subset_stocks :
         if stock[4] >= 7 :
             msg = msg + "{} {}，连续缩量{}天，{}\n".format(stock[0],stock[1],stock[4],stock[6])
@@ -193,10 +198,6 @@ def statistics_stocks(dt):
     #     if stock[2] > 3 and stock[4]>50 :
     #         msg = msg + "{} {}，量价齐跌{}天，累计换手{}%，{}\n".format(stock[0],stock[1],stock[2],stock[4],stock[5])
 
-    # 强势股
-    # stock_zt_pool_strong_em_df = ak.stock_zt_pool_strong_em(date='20210521')
-    # print(stock_zt_pool_strong_em_df)
-
     # 盘口异动
     # stock_changes_em_df = ak.stock_changes_em(symbol="大笔买入") # '火箭发射', '大笔买入', '大笔卖出'
     # print(stock_changes_em_df)
@@ -205,40 +206,7 @@ def statistics_stocks(dt):
     # stock_lhb_ggtj_sina_df = ak.stock_lhb_ggtj_sina(recent_day="5")
     # subset = stock_lhb_ggtj_sina_df[['股票代码', '股票名称', '累积买入额', '买入次数', '累积卖出额', '卖出次数', '净额']]
     # subset_stocks = [tuple(x) for x in subset.values]
-    # subset_stocks = filter_stocks(subset_stocks)
+    # subset_stocks = utils.filter_stocks(subset_stocks)
     # print(stock_lhb_ggtj_sina_df)
 
     push.statistics(msg)
-
-# 涨停数据统计
-# def statistics_limitup(dt):
-#     msg = "【今日A股涨停追踪】\n"
-
-#     # 持续缩量
-#     msg = msg + "\n>>>>>>>>>>>> 涨停个股数据\n"
-#     standardlize_dt = dt.replace('-','') # 规范 dt 参数格式
-#     stock_zt_pool_em_df = ak.stock_zt_pool_em(standardlize_dt)
-#     subset = stock_zt_pool_em_df[['代码', '名称', '涨跌幅', '换手率', '最后封板时间', '炸板次数', '连板数', '所属行业']]
-#     subset_stocks = [tuple(x) for x in subset.values]
-#     subset_stocks = filter_stocks(subset_stocks)
-#     for stock in subset_stocks :
-#         if stock[6] == 1 and stock[5] == 0 and stock[4]<'113000':
-#             msg = msg + "{} {}，封版时间：{}，{}\n".format(stock[0],stock[1],stock[4],stock[7])
-
-#     push.statistics(msg)
-
-
-# 过滤指定股票
-def filter_stocks(stock_list):
-    return [stock for stock in stock_list if (
-        (stock[0] != None and stock[1] != None) and (
-        stock[0].startswith('00') or
-        stock[0].startswith('60') or
-        stock[0].startswith('SZ00') or
-        stock[0].startswith('SZ60') or
-        stock[0].startswith('SH00') or
-        stock[0].startswith('SH60')) and not (
-        'ST' in stock[1] or
-        '*'  in stock[1] or
-        '退' in stock[1] or
-        'N' in stock[1]))]

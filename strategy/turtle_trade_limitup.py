@@ -3,7 +3,7 @@
 import logging
 
 # 最后一个交易日收市价为指定区间内最高价
-def check_enter(code_name, data, end_date=None, threshold=60):
+def check(code_name, data, end_date=None, threshold=60):
     if end_date is not None:
         mask = (data['日期'] <= end_date)
         data = data.loc[mask]
