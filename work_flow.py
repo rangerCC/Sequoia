@@ -23,7 +23,7 @@ from datetime import datetime,timedelta
 
 def prepare():
     logging.info("\n************************ process start ***************************************\n\n")
-    # process_informations()
+    process_informations()
     process_strategies()
     logging.info("\n************************ process   end ***************************************\n")
 
@@ -75,7 +75,11 @@ def check(stocks_data, strategy, strategy_func):
         for stock in list(results.keys()) :
             stock_data = ak.stock_individual_info_em(symbol=stock[0])
             industry = stock_data.loc[stock_data['item']=='行业'].value.iloc[0]
-            equity = (stock_data.loc[stock_data['item']=='流通市值'].value.iloc[0])/100000000.0
+            equity = stock_data.loc[stock_data['item']=='流通市值'].value.iloc[0]
+            if equity == '-' :
+                equity = 0
+            else :
+                equity = float(equity)/100000000.0
             stock_msg = stock_msg + "|{}       {}      {}      {}      {:.2f}亿|\n".format(stock[0],stock[1],stock[2],industry,equity)
         push.strategy('**************"{0}"**************\n\n{1}\n**************"{0}"**************\n'.format(strategy, stock_msg))
 
