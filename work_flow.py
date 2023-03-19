@@ -42,20 +42,20 @@ def process_strategies() :
     stocks = utils.filter_stocks(stocks)
 
     strategies = {
-        # '今日高而窄旗形': high_tight_flag.check,
+        '今日高而窄旗形': high_tight_flag.check,
         # '今日托底回踩55日均线': backtrace_ma55.check,
         # '今日回踩年线': backtrace_ma250.check,
         '均线多头': keep_increasing.check,
-        # '放量上涨': enter.check_volume,
+        '放量上涨': enter.check_volume,
         # '突破平台': breakthrough_platform.check,
         # '无大幅回撤': low_backtrace_increase.check,
         # '放量跌停': climax_limitdown.check,
-        # '大海龟': turtle_trade_limitup.check,
-        # '停机坪': parking_apron.check,
-        # '低吸超短牛': backtrace_ma10.check,
-        # '低吸短线牛': backtrace_ma20.check,
-        # '波段牛': backtrace_ma55.check,
-        # '长线牛': backtrace_ma250.check,
+        '大海龟': turtle_trade_limitup.check,
+        '停机坪': parking_apron.check,
+        '低吸超短牛': backtrace_ma10.check,
+        '低吸短线牛': backtrace_ma20.check,
+        '波段牛': backtrace_ma55.check,
+        '长线牛': backtrace_ma250.check,
         # '近期突破牛': backtrace_ma10.check,
     }
 
