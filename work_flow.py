@@ -32,7 +32,7 @@ def process_informations() :
     dt = statistics_latest()
     statistics_stocks(dt)
     statistics_youzi(dt)
-    statistics_guanzhu(dt)
+    # statistics_guanzhu(dt)
 
 
 def process_strategies() :
