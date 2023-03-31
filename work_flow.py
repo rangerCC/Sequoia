@@ -73,6 +73,9 @@ def check(stocks_data, strategy, strategy_func):
     if len(results) > 0:
         stock_msg = "|股票代码      股票名称      涨跌幅      行业      流通值|\n"
         for stock in list(results.keys()) :
+            if stock[0] in ('600068') :
+                continue
+
             stock_data = ak.stock_individual_info_em(symbol=stock[0])
             industry = stock_data.loc[stock_data['item']=='行业'].value.iloc[0]
             equity = stock_data.loc[stock_data['item']=='流通市值'].value.iloc[0]
@@ -81,6 +84,11 @@ def check(stocks_data, strategy, strategy_func):
             else :
                 equity = float(equity)/100000000.0
             stock_msg = stock_msg + "|{}       {}      {}      {}      {:.2f}亿|\n".format(stock[0],stock[1],stock[2],industry,equity)
+
+            # 股东数
+            # stock_zh_a_gdhs_detail_em_df = ak.stock_zh_a_gdhs_detail_em(symbol=stock[0])
+            # print(stock_zh_a_gdhs_detail_em_df)
+            
         push.strategy('**************"{0}"**************\n\n{1}\n**************"{0}"**************\n'.format(strategy, stock_msg))
 
 
