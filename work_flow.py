@@ -22,23 +22,35 @@ import time
 from datetime import datetime,timedelta
 
 def prepare():
+    # 日志记录开始
     logging.info("\n************************ process start ***************************************\n\n")
+    # 处理统计信息
     process_informations()
+    # 处理策略
     process_strategies()
+    # 日志记录结束
     logging.info("\n************************ process   end ***************************************\n")
 
-
+# 处理统计信息
 def process_informations() :
+    # 获取最新日期
     dt = statistics_latest()
+    # 统计股票信息
     statistics_stocks(dt)
+    # 统计游资信息
     statistics_youzi(dt)
+    # 统计股东信息
     # statistics_guanzhu(dt)
 
-
+# 处理策略
 def process_strategies() :
-    all_data = ak.stock_zh_a_spot_em() # 实时行情
+    # 获取实时行情
+    all_data = ak.stock_zh_a_spot_em()
+    # 选取需要的列
     subset = all_data[['代码', '名称', '涨跌幅']]
+    # 将 DataFrame 转换为元组列表
     stocks = [tuple(x) for x in subset.values]
+    # 过滤股票
     stocks = utils.filter_stocks(stocks)
 
     strategies = {

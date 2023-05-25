@@ -1,37 +1,41 @@
-# -*- encoding: UTF-8 -*-
-import data_fetcher
-import settings
-import utils
+import datetime
+import logging
+
 import akshare as ak
 from wxpusher import WxPusher
+
 import push
-import logging
-import time
-import datetime
+import settings
+
 
 def prepare():
-    if not settings.config['monitor']['enable'] :
+    # 判断是否启用监控
+    if not settings.config['monitor']['enable']:
         return
 
+    # 获取前一天的日期
     dt = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y%m%d")
-    # 实时行情信息
+    # 获取实时行情信息
     news_cctv_df = ak.news_cctv(date=dt)
+    # 获取国内联播快讯
     fav_news = news_cctv_df.loc[(news_cctv_df['title'] == '国内联播快讯')]
-    if not fav_news.empty :
-        process(dt, fav_news)
+    # 如果没有国内联播快讯则返回
+    if fav_news.empty:
+        return
+
+    # 处理国内联播快讯
+    process(dt, fav_news)
 
 
 def process(dt, fav_news):
+    # 构造消息
     msg = "【{} 国内联播快讯】\n".format(dt)
+    # 拆分国内联播快讯
     split_news = fav_news['content'].iloc[0].split('。')
-    index = 1
-    for a_new in split_news :
-        if len(a_new)>0 :
-            msg = msg + '\n【{}】{}\n'.format(index, a_new)
-            index += 1
-    push.statistics(msg)
+    for index, a_new in enumerate(split_news, start=1):
+        if len(a_new) > 0:
+            # 构造单条消息
+            msg += '\n【{}】{}\n'.format(index, a_new)
 
-    # 个股信息
-    # stock_individual_info_em_df = ak.stock_individual_info_em(symbol=code)
-    
-    
+    # 推送消息
+    push.statistics(msg)
