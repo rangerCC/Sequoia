@@ -44,7 +44,7 @@ def process_strategies() :
     strategies = {
         '今日高而窄旗形': high_tight_flag.check,
         # '今日托底回踩55日均线': backtrace_ma55.check,
-        # '今日回踩年线': backtrace_ma250.check,
+        '今日回踩年线': backtrace_ma250.check,
         '均线多头': keep_increasing.check,
         '放量上涨': enter.check_volume,
         # '突破平台': breakthrough_platform.check,
