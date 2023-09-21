@@ -50,8 +50,8 @@ def process_strategies() :
         # '突破平台': breakthrough_platform.check,
         # '无大幅回撤': low_backtrace_increase.check,
         # '放量跌停': climax_limitdown.check,
-        '大海龟': turtle_trade_limitup.check,
-        '停机坪': parking_apron.check,
+        '涨停大海龟': turtle_trade_limitup.check,
+        '经典停机坪': parking_apron.check,
         '低吸超短牛': backtrace_ma10.check,
         '低吸短线牛': backtrace_ma20.check,
         '波段牛': backtrace_ma55.check,
@@ -89,7 +89,7 @@ def check(stocks_data, strategy, strategy_func):
             # stock_zh_a_gdhs_detail_em_df = ak.stock_zh_a_gdhs_detail_em(symbol=stock[0])
             # print(stock_zh_a_gdhs_detail_em_df)
             
-        push.strategy('**************"{0}"**************\n\n{1}\n**************"{0}"**************\n'.format(strategy, stock_msg))
+        push.strategy('【{0}】\n\n{1}\n\n'.format(strategy, stock_msg))
 
 
 def check_enter(end_date=None, strategy_fun=enter.check_volume):
