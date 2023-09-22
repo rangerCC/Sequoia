@@ -70,8 +70,8 @@ def check(code_name, data, end_date=None, threshold=120):
                 recent_lowest_row = row
     
     # 近期回调 30-200 天
-    back_date_diff = datetime.date(datetime.strptime(recent_lowest_row['日期'], '%Y-%m-%d')) - \
-                datetime.date(datetime.strptime(highest_row['日期'], '%Y-%m-%d'))
+    back_date_diff = datetime.date(datetime.strptime(recent_lowest_row['日期'].isoformat(), '%Y-%m-%d')) - \
+                datetime.date(datetime.strptime(highest_row['日期'].isoformat(), '%Y-%m-%d'))
     if not(timedelta(days=30) <= back_date_diff <= timedelta(days=100)):
         return False
     

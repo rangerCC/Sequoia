@@ -69,14 +69,14 @@ def check(code_name, data, end_date=None, threshold=60):
                 recent_lowest_row = row
 
     # 近2天最低
-    lowest_date_diff = datetime.date(datetime.strptime(recent_lowest_row['日期'], '%Y-%m-%d')) - \
-                datetime.date(datetime.strptime(data.iloc[-1]['日期'], '%Y-%m-%d'))
+    lowest_date_diff = datetime.date(datetime.strptime(recent_lowest_row['日期'].isoformat(), '%Y-%m-%d')) - \
+                datetime.date(datetime.strptime(data.iloc[-1]['日期'].isoformat(), '%Y-%m-%d'))
     if not(timedelta(days=0) <= lowest_date_diff <= timedelta(days=1)):
         return False
     
     # 近期回调 10-50 天
-    back_date_diff = datetime.date(datetime.strptime(recent_lowest_row['日期'], '%Y-%m-%d')) - \
-                datetime.date(datetime.strptime(highest_row['日期'], '%Y-%m-%d'))
+    back_date_diff = datetime.date(datetime.strptime(recent_lowest_row['日期'].isoformat(), '%Y-%m-%d')) - \
+                datetime.date(datetime.strptime(highest_row['日期'].isoformat(), '%Y-%m-%d'))
     if not(timedelta(days=10) <= back_date_diff <= timedelta(days=50)):
         return False
     
