@@ -9,3 +9,5 @@
 storage/Positions
 config.yaml
 .venv
+analysis.xlsx
+output.xlsx

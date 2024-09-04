@@ -29,10 +29,10 @@ def prepare():
 
 
 def process_informations() :
-    dt = statistics_latest()
-    statistics_stocks(dt)
-    # statistics_youzi(dt)
-    # statistics_guanzhu(dt)
+    statistics_latest()
+    statistics_stocks()
+    # statistics_youzi()
+    # statistics_guanzhu()q
 
 
 def process_strategies() :
@@ -118,11 +118,10 @@ def statistics_latest():
 
     push.statistics(msg)
 
-    return stock_market_activity.iloc[11][1].split(' ')[0]
-
 # 游资、股东统计数据
-def statistics_youzi(dt):
+def statistics_youzi():
     msg = "【今日A股游资、股东追踪】\n"
+    today = datetime.today().strftime("%Y-%m-%d")
 
     # 内部交易
     msg = msg + "\n>>>>>>>>>>>> 内部交易\n"
@@ -132,7 +131,7 @@ def statistics_youzi(dt):
     subset_stocks = utils.filter_stocks(subset_stocks)
     for stock in subset_stocks :
         if stock[4] > 0 :
-            lowest_date_diff = datetime.date(datetime.strptime(dt, '%Y-%m-%d')) - \
+            lowest_date_diff = datetime.date(datetime.strptime(today, '%Y-%m-%d')) - \
                 stock[2]
             if timedelta(days=0) <= lowest_date_diff <= timedelta(days=3):
                 msg = msg + "{} {}，{} 于 {} 以均价 {} 买入 {} 股\n".format(stock[0],stock[1],stock[3],stock[2],stock[5],stock[4])
@@ -160,8 +159,9 @@ def statistics_youzi(dt):
 
 
 # 近1周和一月股票关注舆情
-def statistics_guanzhu(dt):
+def statistics_guanzhu():
     msg = "【近期热搜个股】\n"
+    today = datetime.today().strftime("%Y-%m-%d")
 
     # 近一周热搜
     msg = msg + "\n>>>>>>>>>>>> 近一周热搜\n"
@@ -187,7 +187,7 @@ def statistics_guanzhu(dt):
 
 
 # 个股统计数据
-def statistics_stocks(dt):
+def statistics_stocks():
     msg = "【今日A股个股追踪】\n"
 
     # 持续缩量
