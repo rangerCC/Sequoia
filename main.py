@@ -45,5 +45,5 @@ if settings.config['cron']:
         time.sleep(1)
 else:
     # 实时任务
-    # job1()
+    job1()
     job2()

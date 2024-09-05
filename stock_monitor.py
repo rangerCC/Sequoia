@@ -39,10 +39,11 @@ def process_statistics(stock):
     today = datetime.today().strftime("%Y%m%d")
     t_360_days_ago = (datetime.now() - timedelta(days=360)).strftime("%Y%m%d")
 
+    columns = ['日期' ,'股票代码', '收盘', '成交量', '涨跌幅', '换手率']
     data = ak.stock_zh_a_hist(symbol=code, period="daily", start_date=t_360_days_ago, adjust="qfq")
-    subset = data[['日期' ,'股票代码', '收盘', '成交量', '涨跌幅', '换手率']]
+    subset = data[columns]
     subset_map = [tuple(x) for x in subset.values]
-    df = pd.DataFrame(subset_map, columns=['日期' ,'股票代码', '收盘', '成交量', '涨跌幅', '换手率'])
+    df = pd.DataFrame(subset_map, columns=columns)
     df.to_excel('output.xlsx', index=False)
 
 def process_monitor(stock):
