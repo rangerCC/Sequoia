@@ -46,4 +46,4 @@ if settings.config['cron']:
 else:
     # 实时任务
     job1()
-    job2()
+    # job2()
