@@ -24,7 +24,7 @@ from datetime import datetime,timedelta
 def prepare():
     logging.info("\n************************ process start ***************************************\n\n")
     process_informations()
-    process_strategies()
+    # process_strategies()
     logging.info("\n************************ process   end ***************************************\n")
 
 
@@ -42,20 +42,20 @@ def process_strategies() :
     stocks = utils.filter_stocks(stocks)
 
     strategies = {
-        '今日高而窄旗形': high_tight_flag.check,
+        # '今日高而窄旗形': high_tight_flag.check,
         # '今日托底回踩55日均线': backtrace_ma55.check,
-        '今日回踩年线': backtrace_ma250.check,
-        '均线多头': keep_increasing.check,
-        '放量上涨': enter.check_volume,
+        # '今日回踩年线': backtrace_ma250.check,
+        # '均线多头': keep_increasing.check,
+        # '放量上涨': enter.check_volume,
         # '突破平台': breakthrough_platform.check,
         # '无大幅回撤': low_backtrace_increase.check,
         # '放量跌停': climax_limitdown.check,
-        '涨停大海龟': turtle_trade_limitup.check,
+        # '涨停大海龟': turtle_trade_limitup.check,
         '经典停机坪': parking_apron.check,
-        '低吸超短牛': backtrace_ma10.check,
-        '低吸短线牛': backtrace_ma20.check,
+        # '低吸超短牛': backtrace_ma10.check,
+        # '低吸短线牛': backtrace_ma20.check,
         '波段牛': backtrace_ma55.check,
-        '长线牛': backtrace_ma250.check,
+        # '长线牛': backtrace_ma250.check,
         # '近期突破牛': backtrace_ma10.check,
     }
 
@@ -73,9 +73,6 @@ def check(stocks_data, strategy, strategy_func):
     if len(results) > 0:
         stock_msg = "|股票代码      股票名称      涨跌幅      行业      流通值|\n"
         for stock in list(results.keys()) :
-            if stock[0] in ('600068') :
-                continue
-
             stock_data = ak.stock_individual_info_em(symbol=stock[0])
             industry = stock_data.loc[stock_data['item']=='行业'].value.iloc[0]
             equity = stock_data.loc[stock_data['item']=='流通市值'].value.iloc[0]
@@ -201,14 +198,14 @@ def statistics_stocks():
             msg = msg + "{} {}，连续缩量{}天，{}\n".format(stock[0],stock[1],stock[4],stock[6])
 
     # 量价齐跌
-    # msg = msg + "\n>>>>>>>>>>>> 量价齐跌\n"
-    # stock_rank_ljqd_ths_df = ak.stock_rank_ljqd_ths()
-    # subset = stock_rank_ljqd_ths_df[['股票代码', '股票简称', '量价齐跌天数', '阶段涨幅', '累计换手率', '所属行业']]
-    # subset_stocks = [tuple(x) for x in subset.values]
-    # subset_stocks = filter_stocks(subset_stocks)
-    # for stock in subset_stocks :
-    #     if stock[2] > 3 and stock[4]>50 :
-    #         msg = msg + "{} {}，量价齐跌{}天，累计换手{}%，{}\n".format(stock[0],stock[1],stock[2],stock[4],stock[5])
+    msg = msg + "\n>>>>>>>>>>>> 量价齐跌\n"
+    stock_rank_ljqd_ths_df = ak.stock_rank_ljqd_ths()
+    subset = stock_rank_ljqd_ths_df[['股票代码', '股票简称', '量价齐跌天数', '阶段涨幅', '累计换手率', '所属行业']]
+    subset_stocks = [tuple(x) for x in subset.values]
+    subset_stocks = utils.filter_stocks(subset_stocks)
+    for stock in subset_stocks :
+        if stock[2] > 3 and stock[4]>50 :
+            msg = msg + "{} {}，量价齐跌{}天，累计换手{}%，{}\n".format(stock[0],stock[1],stock[2],stock[4],stock[5])
 
     # 盘口异动
     # stock_changes_em_df = ak.stock_changes_em(symbol="大笔买入") # '火箭发射', '大笔买入', '大笔卖出'
